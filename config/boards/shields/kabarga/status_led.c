@@ -138,7 +138,7 @@ void usb_animation_work_handler(struct k_work *work)
     k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &wait_for_indicator_work);
     indicator_busy = true;
     #ifdef disable_led_sleep_pc
-    if (usb_conn_state == ZMK_USB_CONN_SUSPENDED)
+    if (usb_conn_state == ZMK_USB_CONN_POWERED)
     {
         led_all_OFF();
         indicator_busy = false;
@@ -307,7 +307,8 @@ int usb_listener(const zmk_event_t *eh)
 }
 
 ZMK_LISTENER(usb_listener, usb_listener);
-ZMK_SUBSCRIPTION(usb_listener, zmk_usb_conn_state_changed); 
+ZMK_SUBSCRIPTION(usb_listener, zmk_usb_conn_state_changed);
+
 void show_battery()
 {
     k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bat_animation_work);
