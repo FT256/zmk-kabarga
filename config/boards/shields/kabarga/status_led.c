@@ -34,6 +34,7 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #define LED_BATTERY_SHOW_DELAY 700
 #define LED_BATTERY_SLEEP_SHOW 1000
 #define LED_BATTERY_BLINK_DELAY 200
+#define LED_USB_BLINK_DELAY 200
 
 #define LED_STATUS_ON 100
 #define LED_STATUS_OFF 0
@@ -133,15 +134,15 @@ void usb_animation_work_handler(struct k_work *work)
     for (int i = 0; i < 4; i++)
     {
         led_fade_ON(&pwm_leds[i]);
-        k_msleep(LED_BATTERY_BLINK_DELAY / 2);
+        k_msleep(LED_USB_BLINK_DELAY / 2);
     }
 
-    k_msleep(LED_BATTERY_BLINK_DELAY);
+    k_msleep(LED_USB_BLINK_DELAY);
 
     for (int i = 3; i >= 0; i--)
     {
         led_fade_OFF(&pwm_leds[i]);
-        k_msleep(LED_BATTERY_BLINK_DELAY / 2);
+        k_msleep(LED_USB_BLINK_DELAY / 2);
     }
 }
 // Define work for USB animation
@@ -166,7 +167,7 @@ void check_ble_conn_handler(struct k_work *work)
         {
             led_fade_blink(&pwm_leds[3], LED_BLINK_CONN_DELAY, 1);
             k_work_schedule(&check_ble_conn_work, K_SECONDS(4)); // Restart work for next status check
-            k_msleep(LED_BATTERY_BLINK_DELAY);
+            k_msleep(LED_BLINK_PROFILE_DELAY);
             return;
         }
     }
@@ -215,7 +216,7 @@ void bat_animation_work_handler(struct k_work *work)
         }
         k_msleep(LED_BATTERY_SHOW_DELAY);
         led_all_OFF();
-        k_msleep(LED_BATTERY_BLINK_DELAY);
+        k_msleep(LED_BATTERY_BLINK_DELAY*2);
         k_work_schedule(&check_ble_conn_work, K_SECONDS(4));
         return;     
     }
