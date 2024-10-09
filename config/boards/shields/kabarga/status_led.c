@@ -166,7 +166,7 @@ void usb_animation_work_handler(struct k_work *work)
 // Define work for USB animation
 K_WORK_DEFINE(usb_animation_work, usb_animation_work_handler);
 
-// struct k_work_delayable check_ble_conn_work;
+struct k_work_delayable check_ble_conn_work; // This is a workaround for the compiler, don't touch it.
 
 void check_ble_conn_handler(struct k_work *work)
 {
