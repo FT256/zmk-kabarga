@@ -106,7 +106,8 @@ static void led_fade_OFF(const struct led *led)
 static void led_all_OFF() {
     for (int i = 0; i < BACKLIGHT_NUM_LEDS; i++) {
         const struct led *led = &pwm_leds[i];
-        int ret = led_off(led->dev, led->id);
+        // int ret = 
+        led_off(led->dev, led->id);
     }
     return;
 }
@@ -160,12 +161,12 @@ void usb_animation_work_handler(struct k_work *work)
         k_msleep(LED_BATTERY_BLINK_DELAY / 2);
     }
     indicator_busy = false;
-    return ZMK_EV_EVENT_BUBBLE;
+    return;
 }
 // Define work for USB animation
 K_WORK_DEFINE(usb_animation_work, usb_animation_work_handler);
 
-struct k_work_delayable check_ble_conn_work;
+// struct k_work_delayable check_ble_conn_work;
 
 void check_ble_conn_handler(struct k_work *work)
 {
