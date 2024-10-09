@@ -49,7 +49,6 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 bool check_conn_working = false;
 static enum zmk_usb_conn_state usb_conn_state = ZMK_USB_CONN_NONE;
-static bool indicator_busy = false;
 
 struct led {
     const struct device *dev;
@@ -122,26 +121,12 @@ void led_fade_blink(const struct led *led, uint32_t sleep_ms, const int count)
     return;
 }
 
-void wait_for_indicator_handler(struct k_work *work)
-{
-    while (indicator_busy)
-    {
-        k_msleep(200);
-    }
-    return;
-}
-
-K_WORK_DEFINE(wait_for_indicator_work, wait_for_indicator_handler);
-
 void usb_animation_work_handler(struct k_work *work)
 {
-    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &wait_for_indicator_work);
-    indicator_busy = true;
     #ifdef disable_led_sleep_pc
     if (usb_conn_state == ZMK_USB_CONN_POWERED)
     {
         led_all_OFF();
-        indicator_busy = false;
         return;
     }
     #endif
@@ -158,13 +143,9 @@ void usb_animation_work_handler(struct k_work *work)
         led_fade_OFF(&pwm_leds[i]);
         k_msleep(LED_BATTERY_BLINK_DELAY / 2);
     }
-    indicator_busy = false;
-    return;
 }
 // Define work for USB animation
-K_WORK_DEFINE(usb_animation_work, usb_animation_work_handler);
-
-struct k_work_delayable check_ble_conn_work; // This is a workaround for the compiler, don't touch it.
+K_WORK_DELAYABLE_DEFINE(usb_animation_work, usb_animation_work_handler);
 
 void check_ble_conn_handler(struct k_work *work)
 {
@@ -181,11 +162,8 @@ void check_ble_conn_handler(struct k_work *work)
         }
         else
         {
-            k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &wait_for_indicator_work);
-            indicator_busy = true;
             led_fade_blink(&pwm_leds[3], LED_BLINK_CONN_DELAY, 1);
-            k_work_schedule_for_queue(zmk_workqueue_lowprio_work_q(), &check_ble_conn_work, K_SECONDS(4)); // Restart work for next status check
-            indicator_busy = false;
+            k_work_schedule(&check_ble_conn_work, K_SECONDS(4)); // Restart work for next status check
             return;
         }
     }
@@ -194,12 +172,9 @@ K_WORK_DELAYABLE_DEFINE(check_ble_conn_work, check_ble_conn_handler);
 
 void bat_animation_work_handler(struct k_work *work)
 {
-    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &wait_for_indicator_work);
-    
     uint8_t level = zmk_battery_state_of_charge();
     if (level != 0)
     {
-        indicator_busy = true;
         if (level <= 15)
         {
             led_fade_blink(&pwm_leds[0], LED_BATTERY_BLINK_DELAY, 3);
@@ -237,21 +212,16 @@ void bat_animation_work_handler(struct k_work *work)
         }
         k_msleep(LED_BATTERY_SHOW_DELAY);
         led_all_OFF();
-        indicator_busy = false;
-        k_work_schedule_for_queue(zmk_workqueue_lowprio_work_q(), &check_ble_conn_work, K_SECONDS(4));
+        k_work_schedule(&check_ble_conn_work, K_SECONDS(4));
         return;     
     }
-    
 }
 K_WORK_DELAYABLE_DEFINE(bat_animation_work, bat_animation_work_handler);
 
 static int led_init(const struct device *dev)
 {
-    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &wait_for_indicator_work);
-    indicator_busy = true;
     led_all_OFF();
-    indicator_busy = false;
-    k_work_schedule_for_queue(zmk_workqueue_lowprio_work_q(), &bat_animation_work, K_SECONDS(1));
+    k_work_schedule(&bat_animation_work, K_SECONDS(1));
     return 0;
 }
 
@@ -266,18 +236,13 @@ int ble_profile_listener(const zmk_event_t *eh)
     }
     if (profile_ev->index <= 2)
     {
-        k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &wait_for_indicator_work);
-        indicator_busy = true;
         led_fade_blink(&pwm_leds[profile_ev->index], LED_BLINK_PROFILE_DELAY, 1);
-        indicator_busy = false;
     }
 
     if (!check_conn_working)
     {
-        k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &wait_for_indicator_work);
         check_conn_working = true;
-        k_work_schedule_for_queue(zmk_workqueue_lowprio_work_q(), &check_ble_conn_work, K_SECONDS(5));
-        indicator_busy = false;
+        k_work_schedule(&check_ble_conn_work, K_SECONDS(5));
     }
 
     return ZMK_EV_EVENT_BUBBLE;
@@ -298,12 +263,12 @@ int usb_listener(const zmk_event_t *eh)
 
     if (usb_ev->conn_state != ZMK_USB_CONN_NONE)
     {
-        k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &usb_animation_work);
+        k_work_schedule(&usb_animation_work, K_NO_WAIT);
     }
     else
     {
         check_conn_working = true;
-        k_work_schedule_for_queue(zmk_workqueue_lowprio_work_q(), &check_ble_conn_work, K_SECONDS(5));
+        k_work_schedule(&check_ble_conn_work, K_SECONDS(5));
     }
     return ZMK_EV_EVENT_BUBBLE;
 }
@@ -313,7 +278,7 @@ ZMK_SUBSCRIPTION(usb_listener, zmk_usb_conn_state_changed);
 
 void show_battery()
 {
-    k_work_submit_to_queue(zmk_workqueue_lowprio_work_q(), &bat_animation_work);
+    k_work_schedule(&bat_animation_work, K_NO_WAIT);
 }
 
 void hide_battery()
