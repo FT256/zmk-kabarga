@@ -178,8 +178,8 @@ void check_ble_conn_handler(struct k_work *work)
         if (zmk_ble_active_profile_is_connected() || usb_conn_state != ZMK_USB_CONN_NONE )
         {
             check_conn_working = false;
-            // return;
-            return ZMK_EV_EVENT_BUBBLE;
+            return;
+            // return ZMK_EV_EVENT_BUBBLE;
         }
         else
         {
@@ -189,7 +189,7 @@ void check_ble_conn_handler(struct k_work *work)
             k_work_schedule_for_queue(zmk_workqueue_lowprio_work_q(), &check_ble_conn_work, K_SECONDS(4)); // Restart work for next status check
             indicator_busy = false;
         }
-        return ZMK_EV_EVENT_BUBBLE;
+        return;
     }
 }
 K_WORK_DELAYABLE_DEFINE(check_ble_conn_work, check_ble_conn_handler);
@@ -244,7 +244,7 @@ void bat_animation_work_handler(struct k_work *work)
         led_all_OFF();
         indicator_busy = false;
         k_work_schedule_for_queue(zmk_workqueue_lowprio_work_q(), &check_ble_conn_work, K_SECONDS(4));
-        return ZMK_EV_EVENT_BUBBLE;     
+        return;     
     }
     
 }
@@ -258,8 +258,8 @@ static int led_init(const struct device *dev)
     led_all_OFF();
     indicator_busy = false;
     k_work_schedule_for_queue(zmk_workqueue_lowprio_work_q(), &bat_animation_work, K_SECONDS(1));
-    // return 0;
-    return ZMK_EV_EVENT_BUBBLE;
+    return 0;
+    // return ZMK_EV_EVENT_BUBBLE;
 }
 
 SYS_INIT(led_init, APPLICATION, 32);
