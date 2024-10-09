@@ -166,6 +166,7 @@ void check_ble_conn_handler(struct k_work *work)
         {
             led_fade_blink(&pwm_leds[3], LED_BLINK_CONN_DELAY, 1);
             k_work_schedule(&check_ble_conn_work, K_SECONDS(4)); // Restart work for next status check
+            k_msleep(LED_BATTERY_BLINK_DELAY);
             return;
         }
     }
@@ -214,6 +215,7 @@ void bat_animation_work_handler(struct k_work *work)
         }
         k_msleep(LED_BATTERY_SHOW_DELAY);
         led_all_OFF();
+        k_msleep(LED_BATTERY_BLINK_DELAY);
         k_work_schedule(&check_ble_conn_work, K_SECONDS(4));
         return;     
     }
