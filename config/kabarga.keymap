@@ -52,10 +52,10 @@
 
         adjust_layer {
             bindings = <
-&bootloader  &none            &none            &to 4            &out OUT_BLE     &out OUT_USB  &out OUT_USB     &out OUT_USB     &none            &none            &none            &bootloader
-&bt BT_CLR   &bt BT_SEL 0     &bt BT_SEL 1     &bt BT_SEL 2     &bt BT_SEL 3     &bt BT_SEL 4  &bt BT_SEL 4     &bt BT_SEL 3     &bt BT_SEL 2     &bt BT_SEL 1     &bt BT_SEL 0     &bt BT_CLR
-&sys_reset   &rgb_ug RGB_HUI  &rgb_ug RGB_SAI  &rgb_ug RGB_BRI  &rgb_ug RGB_SPI  &check_bat    &rgb_ug RGB_TOG  &rgb_ug RGB_SPD  &rgb_ug RGB_BRD  &rgb_ug RGB_SAD  &rgb_ug RGB_HUD  &sys_reset
-                                               &trans           &none            &trans                         &trans           &trans           &trans
+&bootloader  &none         &to 4         &mo 5         &out OUT_BLE  &out OUT_USB  &out OUT_USB     &out OUT_USB  &mo 5         &to 4         &none         &bootloader
+&bt BT_CLR   &bt BT_SEL 0  &bt BT_SEL 1  &bt BT_SEL 2  &bt BT_SEL 3  &bt BT_SEL 4  &bt BT_SEL 4     &bt BT_SEL 3  &bt BT_SEL 2  &bt BT_SEL 1  &bt BT_SEL 0  &bt BT_CLR
+&sys_reset   &none         &none         &none         &none         &check_bat    &rgb_ug RGB_TOG  &none         &none         &none         &none         &sys_reset
+                                         &trans        &trans        &trans                         &trans        &trans        &trans
             >;
         };
 
@@ -65,6 +65,15 @@
 &none    &kp LSHFT  &kp A  &kp S  &kp D  &kp G      &none  &none  &none  &none  &none  &none
 &none    &kp LCTRL  &kp Z  &kp X  &kp V  &kp F      &none  &none  &none  &none  &none  &none
                            &kp B  &kp C  &kp SPACE         &none  &none  &none
+            >;
+        };
+
+        rgb_layer {
+            bindings = <
+&none  &rgb_ug RGB_COLOR_HSB(50,100,50)  &rgb_ug RGB_EFR  &none  &rgb_ug RGB_EFF  &rgb_ug RGB_TOG  &rgb_ug RGB_TOG  &rgb_ug RGB_EFF  &none  &rgb_ug RGB_EFR  &rgb_ug RGB_COLOR_HSB(55,100,50)  &none
+&none  &rgb_ug RGB_SAI                   &rgb_ug RGB_SPI  &none  &rgb_ug RGB_BRI  &rgb_ug RGB_HUI  &rgb_ug RGB_HUI  &rgb_ug RGB_BRI  &none  &rgb_ug RGB_SPI  &rgb_ug RGB_SAI                   &none
+&none  &rgb_ug RGB_SAD                   &rgb_ug RGB_SPD  &none  &rgb_ug RGB_BRD  &rgb_ug RGB_HUD  &rgb_ug RGB_HUD  &rgb_ug RGB_BRD  &none  &rgb_ug RGB_SPD  &rgb_ug RGB_SAD                   &none
+                                                          &none  &none            &none                             &none            &none  &none
             >;
         };
     };
